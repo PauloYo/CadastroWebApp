@@ -111,4 +111,4 @@ A aplicação utiliza SQL Server com as seguintes tabelas:
 - Autenticação e autorização de usuários
 
 ## Licença
-Este projeto está sob a licença [Sua Licença]. Consulte o arquivo LICENSE para mais detalhes.
+Este projeto está sob a licença do MIT. Consulte o arquivo [LICENSE](/LICENSE) para mais detalhes.
