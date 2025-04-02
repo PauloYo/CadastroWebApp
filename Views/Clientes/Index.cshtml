@@ -1,0 +1,28 @@
+@model List<CadastroWebApp.Models.Cliente>
+
+<div>
+    <h1>Cadastro de Clientes</h1>
+    <p>Bem-vindo ao sistema de cadastro de clientes!</p>
+    <p>Você pode cadastrar novos clientes e visualizar a lista de clientes cadastrados.</p>
+</div>
+<div>
+    <h2>Lista de Clientes</h2>
+    <a href="/Clientes/Create">Novo Cliente</a>
+</div>
+<table class="table-padding" border="1" align="left" min-width="500px" style="border-collapse: collapse; margin-top: 20px;">
+    <tr align="center">
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Ações</th>
+    </tr>
+    @foreach (var cliente in Model)
+    {
+        <tr align="center">
+            <td>@cliente.Nome</td>
+            <td>@cliente.Email</td>
+            <td>
+                <a href="/Clientes/Delete?id=@cliente.Id">Excluir</a>
+            </td>
+        </tr>
+    }
+</table>
