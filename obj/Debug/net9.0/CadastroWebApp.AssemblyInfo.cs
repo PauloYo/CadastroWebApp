@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CadastroWebApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c852abd4eae1d39d1829f17bdd0bd43347d7441a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+01a5b5530c10fa217a2caf5d3eaa5cc51abea31f")]
 [assembly: System.Reflection.AssemblyProductAttribute("CadastroWebApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CadastroWebApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
