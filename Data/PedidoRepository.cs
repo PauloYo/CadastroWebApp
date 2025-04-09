@@ -4,12 +4,12 @@ using CadastroWebApp.Data;
 
 namespace CadastroWebApp.Data
 {
-    public class PedidosRepository
+    public class PedidoRepository
     {
         private readonly string _connectionString;
         private readonly ClienteRepository _clienteRepo;
 
-        public PedidosRepository(string connectionString, ClienteRepository clienteRepo)
+        public PedidoRepository(string connectionString, ClienteRepository clienteRepo)
         {
             _connectionString = connectionString;
             _clienteRepo = clienteRepo;

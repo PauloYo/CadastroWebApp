@@ -4,12 +4,12 @@ using CadastroWebApp.Models;
 
 namespace CadastroWebApp.Controllers
 {
-    public class PedidosController : Controller
+    public class PedidoController : Controller
     {
-        private readonly PedidosRepository _pedidoRepo;
+        private readonly PedidoRepository _pedidoRepo;
         private readonly ClienteRepository _clienteRepo;
 
-        public PedidosController(PedidosRepository pedidoRepo, ClienteRepository clienteRepo)
+        public PedidoController(PedidoRepository pedidoRepo, ClienteRepository clienteRepo)
         {
             _pedidoRepo = pedidoRepo;
             _clienteRepo = clienteRepo;
