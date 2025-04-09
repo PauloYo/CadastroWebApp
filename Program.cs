@@ -4,6 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<CadastroWebApp.Models.Database>();
+builder.Services.AddSingleton<CadastroWebApp.Data.ClienteRepository>();
+builder.Services.AddSingleton<CadastroWebApp.Data.PedidosRepository>();
 
 var app = builder.Build();
 

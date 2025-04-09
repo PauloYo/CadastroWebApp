@@ -44,6 +44,40 @@ namespace CadastroWebApp.Data
             return clientes;
         }
 
+        public Cliente GetClienteById(int id)
+        {
+            Cliente cliente = null;
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string query = "SELECT * FROM Cliente WHERE Id = @Id";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", id);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            cliente = new Cliente
+                            {
+                                Id = reader.GetInt32(0),
+                                Nome = reader.GetString(1),
+                                Email = reader.IsDBNull(2) ? null : reader.GetString(2),
+                                DataNascimento = reader.IsDBNull(3) ? (DateTime?)null : reader.GetDateTime(3),
+                                Genero = reader.IsDBNull(4) ? null : reader.GetString(4),
+                                DataCadastro = reader.GetDateTime(5)
+                            };
+                        }
+                    }
+                }
+            }
+
+            return cliente;
+        }
+
         public void AddCliente(Cliente cliente)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
