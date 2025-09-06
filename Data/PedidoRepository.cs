@@ -14,12 +14,21 @@ namespace CadastroWebApp.Data
 
         public List<Pedido> GetPedidos()
         {
-            return _context.Pedidos.Include(p => p.Cliente).OrderByDescending(p => p.DataPedido).ToList();
+            return _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Produto)
+                .OrderByDescending(p => p.DataPedido)
+                .ToList();
         }
 
         public (List<Pedido> pedidos, int totalCount) GetPedidosPaginados(int page, int pageSize, string search = "")
         {
-            var query = _context.Pedidos.Include(p => p.Cliente).AsQueryable();
+            var query = _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Produto)
+                .AsQueryable();
             
             if (!string.IsNullOrEmpty(search))
             {
@@ -38,13 +47,21 @@ namespace CadastroWebApp.Data
 
         public Pedido? GetPedidoById(int id)
         {
-            return _context.Pedidos.Include(p => p.Cliente).FirstOrDefault(p => p.Id == id);
+            return _context.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Itens)
+                    .ThenInclude(i => i.Produto)
+                .FirstOrDefault(p => p.Id == id);
         }
 
         public void AddPedido(Pedido pedido)
         {
             pedido.DataPedido = DateTime.Now;
             pedido.DataCadastro = DateTime.Now;
+            
+            // Calcular total do pedido baseado nos itens
+            pedido.ValorTotal = pedido.Itens.Sum(i => i.Subtotal);
+            
             _context.Pedidos.Add(pedido);
             _context.SaveChanges();
         }
@@ -52,7 +69,33 @@ namespace CadastroWebApp.Data
         public void UpdatePedido(Pedido pedido)
         {
             pedido.DataModificacao = DateTime.Now;
+            
+            // Recalcular total do pedido
+            pedido.ValorTotal = pedido.Itens.Sum(i => i.Subtotal);
+            
             _context.Pedidos.Update(pedido);
+            _context.SaveChanges();
+        }
+
+        public void AddItemPedido(ItemPedido item)
+        {
+            _context.ItensPedido.Add(item);
+            _context.SaveChanges();
+        }
+
+        public void RemoveItemPedido(int itemId)
+        {
+            var item = _context.ItensPedido.Find(itemId);
+            if (item != null)
+            {
+                _context.ItensPedido.Remove(item);
+                _context.SaveChanges();
+            }
+        }
+
+        public void UpdateItemPedido(ItemPedido item)
+        {
+            _context.ItensPedido.Update(item);
             _context.SaveChanges();
         }
 

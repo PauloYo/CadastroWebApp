@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CadastroWebApp.Data;
 using CadastroWebApp.Models;
+using System.Text.Json;
 
 namespace CadastroWebApp.Controllers
 {
@@ -9,11 +10,13 @@ namespace CadastroWebApp.Controllers
     {
         private readonly PedidoRepository _pedidoRepo;
         private readonly ClienteRepository _clienteRepo;
+        private readonly ProdutoRepository _produtoRepo;
 
-        public PedidosController(PedidoRepository pedidoRepo, ClienteRepository clienteRepo)
+        public PedidosController(PedidoRepository pedidoRepo, ClienteRepository clienteRepo, ProdutoRepository produtoRepo)
         {
             _pedidoRepo = pedidoRepo;
             _clienteRepo = clienteRepo;
+            _produtoRepo = produtoRepo;
         }
 
         public IActionResult Index(int page = 1, string search = "")
@@ -41,23 +44,47 @@ namespace CadastroWebApp.Controllers
         public IActionResult Create()
         {
             ViewBag.Clientes = GetClientesSelectList();
+            ViewBag.Produtos = GetProdutosDisponiveis();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Pedido pedido)
+        public IActionResult Create(Pedido pedido, string itensJson)
         {
             // Remove a validação do Cliente para usar ClienteId
             ModelState.Remove("Cliente");
+            ModelState.Remove("Itens");
             
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Processar itens do pedido
+                    if (!string.IsNullOrEmpty(itensJson))
+                    {
+                        var itens = JsonSerializer.Deserialize<List<ItemPedidoDto>>(itensJson);
+                        
+                        foreach (var itemDto in itens ?? new List<ItemPedidoDto>())
+                        {
+                            var produto = _produtoRepo.GetProdutoById(itemDto.ProdutoId);
+                            if (produto != null)
+                            {
+                                var item = new ItemPedido
+                                {
+                                    ProdutoId = itemDto.ProdutoId,
+                                    Quantidade = itemDto.Quantidade,
+                                    PrecoUnitario = produto.Preco,
+                                    Observacao = itemDto.Observacoes
+                                };
+                                pedido.Itens.Add(item);
+                            }
+                        }
+                    }
+                    
                     _pedidoRepo.AddPedido(pedido);
                     TempData["Success"] = "Pedido cadastrado com sucesso!";
-                    return RedirectToAction("Index");
+                    return RedirectToAction("Details", new { id = pedido.Id });
                 }
                 catch (Exception ex)
                 {
@@ -66,6 +93,7 @@ namespace CadastroWebApp.Controllers
             }
             
             ViewBag.Clientes = GetClientesSelectList();
+            ViewBag.Produtos = GetProdutosDisponiveis();
             return View(pedido);
         }
 
@@ -133,6 +161,52 @@ namespace CadastroWebApp.Controllers
         {
             var clientes = _clienteRepo.GetClientes();
             return new SelectList(clientes, "Id", "Nome");
+        }
+
+        private List<Produto> GetProdutosDisponiveis()
+        {
+            return _produtoRepo.GetProdutos().Where(p => p.Disponivel).ToList();
+        }
+
+        [HttpPost]
+        public IActionResult AdicionarItem(int pedidoId, int produtoId, int quantidade, string? observacao)
+        {
+            try
+            {
+                var produto = _produtoRepo.GetProdutoById(produtoId);
+                if (produto == null)
+                    return Json(new { success = false, message = "Produto não encontrado" });
+
+                var item = new ItemPedido
+                {
+                    PedidoId = pedidoId,
+                    ProdutoId = produtoId,
+                    Quantidade = quantidade,
+                    PrecoUnitario = produto.Preco,
+                    Observacao = observacao
+                };
+
+                _pedidoRepo.AddItemPedido(item);
+                return Json(new { success = true, message = "Item adicionado com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public IActionResult RemoverItem(int itemId)
+        {
+            try
+            {
+                _pedidoRepo.RemoveItemPedido(itemId);
+                return Json(new { success = true, message = "Item removido com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }
