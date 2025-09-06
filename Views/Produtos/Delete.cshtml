@@ -1,0 +1,237 @@
+@model CadastroWebApp.Models.Produto
+@{
+    ViewData["Title"] = $"Excluir Produto: {Model.Nome} - FastRequest";
+}
+
+@functions {
+    public string GetCategoriaIcon(string categoria)
+    {
+        return categoria?.ToLower() switch
+        {
+            "lanches" => "<i class=\"fas fa-hamburger text-warning fa-4x\"></i>",
+            "bebidas" => "<i class=\"fas fa-coffee text-info fa-4x\"></i>",
+            "sobremesas" => "<i class=\"fas fa-ice-cream text-danger fa-4x\"></i>",
+            "pratos principais" => "<i class=\"fas fa-utensils text-success fa-4x\"></i>",
+            "entradas" => "<i class=\"fas fa-leaf text-primary fa-4x\"></i>",
+            "pizzas" => "<i class=\"fas fa-pizza-slice text-warning fa-4x\"></i>",
+            "saladas" => "<i class=\"fas fa-seedling text-success fa-4x\"></i>",
+            "sucos" => "<i class=\"fas fa-glass-whiskey text-orange fa-4x\"></i>",
+            _ => "<i class=\"fas fa-utensils text-secondary fa-4x\"></i>"
+        };
+    }
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <!-- Alerta de confirmação -->
+        <div class="alert alert-danger border-danger" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Confirmar Exclusão de Produto</h5>
+                    <p class="mb-0">Você está prestes a excluir permanentemente este produto do sistema.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card com detalhes do produto a ser excluído -->
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-trash"></i> Produto a ser Excluído
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Ícone da categoria -->
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded d-flex flex-column justify-content-center align-items-center" style="min-height: 200px;">
+                            @Html.Raw(GetCategoriaIcon(Model.Categoria))
+                            <div class="mt-2">
+                                <small class="text-muted">@Model.Categoria</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Informações do produto -->
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <h4 class="text-danger mb-1">@Model.Nome</h4>
+                            <span class="badge bg-@(Model.Disponivel ? "success" : "secondary")">
+                                @(Model.Disponivel ? "Disponível" : "Indisponível")
+                            </span>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>Categoria:</strong><br>
+                                <span class="badge bg-primary">@Model.Categoria</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Preço:</strong><br>
+                                <span class="h5 text-success">R$ @Model.Preco.ToString("F2")</span>
+                            </div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.Descricao))
+                        {
+                            <div class="mb-3">
+                                <strong>Descrição:</strong><br>
+                                <p class="text-muted mb-0">@Model.Descricao</p>
+                            </div>
+                        }
+                        
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> Criado em: @Model.DataCadastro.ToString("dd/MM/yyyy")
+                                </small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-hashtag"></i> ID: @Model.Id
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avisos importantes -->
+        <div class="card mt-3 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Avisos Importantes
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>Ação irreversível:</strong> Este produto será removido permanentemente do sistema.</li>
+                    <li><strong>Histórico de pedidos:</strong> Pedidos anteriores com este produto serão mantidos para fins de histórico.</li>
+                    <li><strong>Referências:</strong> Se este produto estiver em pedidos pendentes, considere apenas desativá-lo.</li>
+                    <li><strong>Backup:</strong> Certifique-se de ter backup dos dados se necessário.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Alternativas à exclusão -->
+        <div class="card mt-3 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb"></i> Alternativas à Exclusão
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">Considere estas opções antes de excluir permanentemente:</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    @if (Model.Disponivel)
+                    {
+                        <a href="/Produtos/Edit/@Model.Id" class="btn btn-sm btn-warning">
+                            <i class="fas fa-eye-slash"></i> Apenas Desativar
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/Produtos/Edit/@Model.Id" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Reativar Produto
+                        </a>
+                    }
+                    <a href="/Produtos/Edit/@Model.Id" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i> Editar Informações
+                    </a>
+                    <a href="/Produtos/Details/@Model.Id" class="btn btn-sm btn-info">
+                        <i class="fas fa-chart-line"></i> Ver Estatísticas
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de confirmação -->
+        <div class="card mt-4 border-danger">
+            <div class="card-body">
+                <form method="post" asp-antiforgery="true">
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                        <label class="form-check-label" for="confirmDelete">
+                            <strong>Confirmo que entendo que esta ação é irreversível</strong>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirmBackup" required>
+                        <label class="form-check-label" for="confirmBackup">
+                            Confirmo que tenho backup dos dados ou que a exclusão é realmente necessária
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                            <i class="fas fa-trash"></i> Confirmar Exclusão Permanente
+                        </button>
+                        <a href="/Produtos/Details/@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar aos Detalhes
+                        </a>
+                        <a href="/Produtos" class="btn btn-outline-secondary">
+                            <i class="fas fa-list"></i> Voltar ao Cardápio
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Informações de contato para recuperação -->
+        <div class="alert alert-light mt-3" role="alert">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i>
+                <strong>Precisa recuperar um produto excluído?</strong> 
+                Entre em contato com o administrador do sistema dentro de 30 dias para verificar se há backup disponível.
+            </small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmDelete = document.getElementById('confirmDelete');
+            const confirmBackup = document.getElementById('confirmBackup');
+            const deleteButton = document.getElementById('deleteButton');
+            
+            function updateDeleteButton() {
+                deleteButton.disabled = !(confirmDelete.checked && confirmBackup.checked);
+                
+                if (deleteButton.disabled) {
+                    deleteButton.classList.remove('btn-danger');
+                    deleteButton.classList.add('btn-outline-danger');
+                } else {
+                    deleteButton.classList.remove('btn-outline-danger');
+                    deleteButton.classList.add('btn-danger');
+                }
+            }
+            
+            confirmDelete.addEventListener('change', updateDeleteButton);
+            confirmBackup.addEventListener('change', updateDeleteButton);
+            
+            // Confirmação final antes do submit
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const finalConfirm = confirm(
+                    `ATENÇÃO: Você está prestes a excluir permanentemente o produto "${@Html.Raw(Json.Serialize(Model.Nome))}".\n\n` +
+                    'Esta ação NÃO pode ser desfeita.\n\n' +
+                    'Clique em OK para confirmar a exclusão ou Cancelar para abortar.'
+                );
+                
+                if (!finalConfirm) {
+                    e.preventDefault();
+                }
+            });
+            
+            // Auto-focus no primeiro checkbox
+            setTimeout(() => {
+                confirmDelete.focus();
+            }, 500);
+        });
+    </script>
+}

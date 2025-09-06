@@ -1,0 +1,203 @@
+@model CadastroWebApp.Models.Produto
+@{
+    ViewData["Title"] = "Editar Produto - FastRequest";
+    var categorias = ViewBag.Categorias as List<string>;
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit text-warning"></i> Editar Produto: @Model.Nome
+                </h4>
+                <small class="text-muted">ID: @Model.Id</small>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-antiforgery="true">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="DataCadastro" />
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="Nome" class="form-label">
+                                    <i class="fas fa-utensils"></i> Nome do Produto: <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Nome" type="text" class="form-control" placeholder="Ex: X-Burger Clássico" required />
+                                <span asp-validation-for="Nome" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label asp-for="Categoria" class="form-label">
+                                    <i class="fas fa-tags"></i> Categoria: <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="Categoria" class="form-select" required>
+                                    <option value="">Selecione uma categoria</option>
+                                    @if (categorias != null)
+                                    {
+                                        @foreach (var categoria in categorias)
+                                        {
+                                            <option value="@categoria" selected="@(categoria == Model.Categoria)">@categoria</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="Categoria" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descricao" class="form-label">
+                            <i class="fas fa-align-left"></i> Descrição:
+                        </label>
+                        <textarea asp-for="Descricao" class="form-control" rows="3" 
+                                  placeholder="Descreva os ingredientes e características do produto"></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Máximo 500 caracteres
+                        </div>
+                        <span asp-validation-for="Descricao" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Preco" class="form-label">
+                                    <i class="fas fa-dollar-sign"></i> Preço: <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    <input asp-for="Preco" type="number" step="0.01" min="0.01" class="form-control" 
+                                           placeholder="0,00" required />
+                                </div>
+                                <span asp-validation-for="Preco" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Disponivel" class="form-label">
+                                    <i class="fas fa-toggle-on"></i> Status:
+                                </label>
+                                <div class="form-check form-switch">
+                                    <input asp-for="Disponivel" class="form-check-input" type="checkbox" 
+                                           id="disponivel" />
+                                    <label class="form-check-label" for="disponivel">
+                                        Produto disponível no cardápio
+                                    </label>
+                                </div>
+                                <span asp-validation-for="Disponivel" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informação sobre ícones de categoria -->
+                    <div class="mb-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Ícones automáticos:</strong> O produto será exibido com um ícone baseado na categoria selecionada.
+                        </div>
+                    </div>
+
+                    <!-- Informações do sistema -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-plus"></i> Criado em: @Model.DataCadastro.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                <i class="fas fa-edit"></i> Última edição: agora
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Resumo de erros de validação -->
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Atualizar Produto
+                        </button>
+                        <a href="/Produtos/Details/@Model.Id" class="btn btn-info">
+                            <i class="fas fa-eye"></i> Ver Detalhes
+                        </a>
+                        <a href="/Produtos" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card de histórico simplificado -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-history"></i> Histórico de Alterações
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <small class="text-muted">
+                            Este produto foi criado em @Model.DataCadastro.ToString("dd/MM/yyyy") e está sendo editado agora.
+                        </small>
+                    </div>
+                    <div>
+                        <span class="badge bg-@(Model.Disponivel ? "success" : "danger")">
+                            @(Model.Disponivel ? "Disponível" : "Indisponível")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Formatação do preço
+            const precoInput = document.querySelector('input[name="Preco"]');
+            if (precoInput) {
+                precoInput.addEventListener('input', function(e) {
+                    let value = e.target.value;
+                    // Remove caracteres não numéricos exceto ponto
+                    value = value.replace(/[^0-9.]/g, '');
+                    // Garante apenas um ponto decimal
+                    const parts = value.split('.');
+                    if (parts.length > 2) {
+                        value = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    e.target.value = value;
+                });
+            }
+
+            // Confirmação antes de sair sem salvar
+            let formChanged = false;
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('input, textarea, select');
+            
+            inputs.forEach(input => {
+                input.addEventListener('change', () => formChanged = true);
+            });
+
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged) {
+                    e.preventDefault();
+                    e.returnValue = 'Você tem alterações não salvas. Deseja realmente sair?';
+                }
+            });
+
+            // Remover aviso ao submeter o form
+            form.addEventListener('submit', () => formChanged = false);
+        });
+    </script>
+}

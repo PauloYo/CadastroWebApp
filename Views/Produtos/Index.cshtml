@@ -1,0 +1,209 @@
+@model List<CadastroWebApp.Models.Produto>
+@{
+    ViewData["Title"] = "Cardápio - FastRequest";
+    var categorias = ViewBag.Categorias as List<string>;
+    var categoriaAtual = ViewBag.Categoria as string;
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold">
+                <i class="fas fa-utensils text-primary"></i> Nosso Cardápio
+            </h2>
+            <a href="/Produtos/Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Adicionar Produto
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros de Categoria -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="fw-bold me-3">Categorias:</span>
+                    <a href="/Produtos" class="btn @(string.IsNullOrEmpty(categoriaAtual) ? "btn-primary" : "btn-outline-primary") btn-sm">
+                        <i class="fas fa-th"></i> Todas
+                    </a>
+                    @if (categorias != null)
+                    {
+                        @foreach (var categoria in categorias)
+                        {
+                            <a href="/Produtos?categoria=@categoria" class="btn @(categoria == categoriaAtual ? "btn-primary" : "btn-outline-primary") btn-sm">
+                                @GetCategoriaIcon(categoria) @categoria
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Busca -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="get" class="d-flex">
+            <input type="text" name="search" value="@ViewBag.Search" class="form-control" 
+                   placeholder="Buscar produtos..." />
+            <input type="hidden" name="categoria" value="@categoriaAtual" />
+            <button type="submit" class="btn btn-outline-primary ms-2">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <small class="text-muted">
+            @ViewBag.TotalCount produto(s) encontrado(s)
+        </small>
+    </div>
+</div>
+
+<!-- Lista de Produtos -->
+@if (Model != null && Model.Any())
+{
+    <div class="row g-4">
+        @foreach (var produto in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm produto-card">
+                    <!-- Ícone da categoria no lugar da imagem -->
+                    <div class="card-img-top produto-icon d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                        <div class="text-center">
+                            @Html.Raw(GetCategoriaIcon(produto.Categoria))
+                            <div class="mt-2">
+                                <span class="badge bg-primary">@produto.Categoria</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">@produto.Nome</h5>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(produto.Descricao))
+                        {
+                            <p class="card-text text-muted flex-grow-1">
+                                @(produto.Descricao.Length > 100 ? produto.Descricao.Substring(0, 100) + "..." : produto.Descricao)
+                            </p>
+                        }
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <div class="preço">
+                                <span class="h4 text-success fw-bold">
+                                    @produto.Preco.ToString("C")
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex align-items-center">
+                                @if (produto.Disponivel)
+                                {
+                                    <span class="badge bg-success me-2">
+                                        <i class="fas fa-check"></i> Disponível
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger me-2">
+                                        <i class="fas fa-times"></i> Indisponível
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="/Produtos/Details/@produto.Id" class="btn btn-outline-primary btn-sm flex-fill">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                            <a href="/Produtos/Edit/@produto.Id" class="btn btn-outline-warning btn-sm flex-fill">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="/Produtos/Delete/@produto.Id" class="btn btn-outline-danger btn-sm flex-fill">
+                                <i class="fas fa-trash"></i> Excluir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <!-- Paginação -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav aria-label="Paginação de produtos" class="mt-4">
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="?page=@i&search=@ViewBag.Search&categoria=@categoriaAtual">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+else
+{
+    <div class="text-center py-5">
+        <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">Nenhum produto encontrado</h4>
+        <p class="text-muted">Tente ajustar os filtros ou adicionar novos produtos ao cardápio.</p>
+        <a href="/Produtos/Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Adicionar Primeiro Produto
+        </a>
+    </div>
+}
+
+@functions {
+    string GetCategoriaIcon(string categoria)
+    {
+        return categoria switch
+        {
+            "Lanches" => "<i class='fas fa-hamburger fa-4x text-warning'></i>",
+            "Bebidas" => "<i class='fas fa-glass-whiskey fa-4x text-info'></i>",
+            "Sobremesas" => "<i class='fas fa-ice-cream fa-4x text-danger'></i>",
+            "Pratos Executivos" => "<i class='fas fa-utensils fa-4x text-success'></i>",
+            "Saladas" => "<i class='fas fa-leaf fa-4x text-success'></i>",
+            "Petiscos" => "<i class='fas fa-cookie-bite fa-4x text-warning'></i>",
+            "Sucos" => "<i class='fas fa-cocktail fa-4x text-primary'></i>",
+            "Cafés" => "<i class='fas fa-coffee fa-4x text-dark'></i>",
+            "Doces" => "<i class='fas fa-candy-cane fa-4x text-danger'></i>",
+            "Salgados" => "<i class='fas fa-bread-slice fa-4x text-warning'></i>",
+            _ => "<i class='fas fa-utensils fa-4x text-secondary'></i>"
+        };
+    }
+}
+
+<style>
+    .produto-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .produto-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+    
+    .produto-img {
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .produto-img-placeholder {
+        height: 200px;
+        background-color: #f8f9fa;
+    }
+    
+    .badge {
+        font-size: 0.8rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.8rem;
+    }
+</style>

@@ -1,0 +1,305 @@
+@model CadastroWebApp.Models.Produto
+@{
+    ViewData["Title"] = $"Produto: {Model.Nome} - FastRequest";
+}
+
+@functions {
+    public string GetCategoriaIcon(string categoria)
+    {
+        return categoria?.ToLower() switch
+        {
+            "lanches" => "<i class=\"fas fa-hamburger text-warning fa-5x\"></i>",
+            "bebidas" => "<i class=\"fas fa-coffee text-info fa-5x\"></i>",
+            "sobremesas" => "<i class=\"fas fa-ice-cream text-danger fa-5x\"></i>",
+            "pratos principais" => "<i class=\"fas fa-utensils text-success fa-5x\"></i>",
+            "entradas" => "<i class=\"fas fa-leaf text-primary fa-5x\"></i>",
+            "pizzas" => "<i class=\"fas fa-pizza-slice text-warning fa-5x\"></i>",
+            "saladas" => "<i class=\"fas fa-seedling text-success fa-5x\"></i>",
+            "sucos" => "<i class=\"fas fa-glass-whiskey text-orange fa-5x\"></i>",
+            _ => "<i class=\"fas fa-utensils text-secondary fa-5x\"></i>"
+        };
+    }
+}
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <!-- Header do produto -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">
+                            <i class="fas fa-utensils text-primary"></i> @Model.Nome
+                        </h4>
+                        <small class="text-muted">Produto ID: @Model.Id</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-@(Model.Disponivel ? "success" : "danger") fs-6">
+                            <i class="fas fa-@(Model.Disponivel ? "check-circle" : "times-circle")"></i>
+                            @(Model.Disponivel ? "Disponível" : "Indisponível")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Coluna do ícone da categoria -->
+            <div class="col-md-5">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-tags"></i> Categoria do Produto
+                        </h6>
+                    </div>
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <div class="mb-3">
+                            @Html.Raw(GetCategoriaIcon(Model.Categoria))
+                        </div>
+                        <h5 class="text-muted">@Model.Categoria</h5>
+                        <div class="alert alert-info mt-3" role="alert">
+                            <i class="fas fa-info-circle"></i>
+                            <small>Ícone gerado automaticamente baseado na categoria</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna dos detalhes -->
+            <div class="col-md-7">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-info-circle"></i> Informações do Produto
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Preço em destaque -->
+                        <div class="text-center mb-4">
+                            <h2 class="text-success mb-0">
+                                <i class="fas fa-dollar-sign"></i> R$ @Model.Preco.ToString("F2")
+                            </h2>
+                            <small class="text-muted">Preço atual</small>
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="mb-3">
+                            <label class="fw-bold text-muted">
+                                <i class="fas fa-tags"></i> Categoria:
+                            </label>
+                            <div class="mt-1">
+                                <span class="badge bg-primary fs-6">@Model.Categoria</span>
+                            </div>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="mb-3">
+                            <label class="fw-bold text-muted">
+                                <i class="fas fa-align-left"></i> Descrição:
+                            </label>
+                            <div class="mt-1">
+                                @if (!string.IsNullOrEmpty(Model.Descricao))
+                                {
+                                    <p class="mb-0">@Model.Descricao</p>
+                                }
+                                else
+                                {
+                                    <p class="text-muted mb-0">
+                                        <em>Nenhuma descrição fornecida.</em>
+                                    </p>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Datas do sistema -->
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="fw-bold text-muted">
+                                    <i class="fas fa-calendar-plus"></i> Criado em:
+                                </label>
+                                <div class="mt-1">
+                                    <small>@Model.DataCadastro.ToString("dd/MM/yyyy")</small><br>
+                                    <small class="text-muted">@Model.DataCadastro.ToString("HH:mm:ss")</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="fw-bold text-muted">
+                                    <i class="fas fa-chart-line"></i> Status:
+                                </label>
+                                <div class="mt-1">
+                                    @if (Model.Disponivel)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Ativo no Cardápio
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> Fora do Cardápio
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações do produto -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-cogs"></i> Ações do Produto
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/Produtos/Edit/@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar Produto
+                    </a>
+                    
+                    @if (Model.Disponivel)
+                    {
+                        <button type="button" class="btn btn-secondary" onclick="toggleDisponibilidade(@Model.Id, false)">
+                            <i class="fas fa-eye-slash"></i> Remover do Cardápio
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-success" onclick="toggleDisponibilidade(@Model.Id, true)">
+                            <i class="fas fa-eye"></i> Adicionar ao Cardápio
+                        </button>
+                    }
+                    
+                    <button type="button" class="btn btn-danger" onclick="confirmarExclusao(@Model.Id, '@Model.Nome')">
+                        <i class="fas fa-trash"></i> Excluir Produto
+                    </button>
+                    
+                    <a href="/Produtos" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Cardápio
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas do produto (placeholder para futuras funcionalidades) -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar"></i> Estatísticas do Produto
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h5 class="text-primary mb-1">0</h5>
+                            <small class="text-muted">Pedidos Realizados</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h5 class="text-success mb-1">R$ 0,00</h5>
+                            <small class="text-muted">Faturamento Total</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h5 class="text-info mb-1">0.0</h5>
+                            <small class="text-muted">Avaliação Média</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h5 class="text-warning mb-1">0</h5>
+                            <small class="text-muted">Estoque</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Estatísticas serão implementadas em versões futuras
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir o produto <strong id="produtoNome"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-warning"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita. O produto será removido permanentemente do sistema.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Confirmar Exclusão
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmarExclusao(produtoId, produtoNome) {
+            document.getElementById('produtoNome').textContent = produtoNome;
+            document.getElementById('deleteForm').action = `/Produtos/Delete/${produtoId}`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        function toggleDisponibilidade(produtoId, novoStatus) {
+            const action = novoStatus ? 'adicionar ao' : 'remover do';
+            const confirmMsg = `Tem certeza que deseja ${action} cardápio este produto?`;
+            
+            if (confirm(confirmMsg)) {
+                // Criar form para enviar a alteração
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/Produtos/ToggleDisponibilidade/${produtoId}`;
+                
+                // Adicionar token anti-forgery
+                const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (token) {
+                    const tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = '__RequestVerificationToken';
+                    tokenInput.value = token.value;
+                    form.appendChild(tokenInput);
+                }
+                
+                // Adicionar campo do novo status
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'disponivel';
+                statusInput.value = novoStatus;
+                form.appendChild(statusInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+}

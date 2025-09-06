@@ -1,0 +1,346 @@
+@model List<CadastroWebApp.Models.Produto>
+@{
+    ViewData["Title"] = "Cardápio - FastRequest";
+    var categorias = ViewBag.Categorias as List<string>;
+    var categoriaAtual = ViewBag.CategoriaAtual as string;
+}
+
+<!-- Hero Section do Cardápio -->
+<div class="hero-section bg-gradient-primary text-white text-center py-5 mb-4">
+    <div class="container">
+        <h1 class="display-4 mb-3">
+            <i class="fas fa-utensils"></i> Nosso Cardápio
+        </h1>
+        <p class="lead mb-4">Descubra nossos deliciosos pratos preparados com ingredientes frescos</p>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <form method="get" class="d-flex">
+                        <input type="text" name="search" class="form-control me-2" 
+                               placeholder="Buscar produto..." value="@ViewBag.Search">
+                        <button type="submit" class="btn btn-light">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filtros de Categoria -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-filter"></i> Filtrar por Categoria
+                    </h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/Produtos/Cardapio" 
+                           class="btn @(string.IsNullOrEmpty(categoriaAtual) ? "btn-primary" : "btn-outline-primary")">
+                            <i class="fas fa-th-large"></i> Todas as Categorias
+                        </a>
+                        
+                        @if (categorias != null)
+                        {
+                            @foreach (var categoria in categorias)
+                            {
+                                <a href="/Produtos/Cardapio?categoria=@categoria" 
+                                   class="btn @(categoria == categoriaAtual ? "btn-primary" : "btn-outline-primary")">
+                                    @Html.Raw(GetCategoriaIconSmall(categoria)) @categoria
+                                </a>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Produtos do Cardápio -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3">
+                    @if (!string.IsNullOrEmpty(categoriaAtual))
+                    {
+                        <text>@Html.Raw(GetCategoriaIconSmall(categoriaAtual)) @categoriaAtual (@Model.Count produtos)</text>
+                    }
+                    else
+                    {
+                        <text><i class="fas fa-utensils"></i> Todos os Produtos (@Model.Count itens disponíveis)</text>
+                    }
+                </h4>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach (var produto in Model.Where(p => p.Disponivel))
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 produto-card shadow-sm">
+                        <!-- Ícone da categoria -->
+                        <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                            <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                <div class="text-center">
+                                    @Html.Raw(GetCategoriaIcon(produto.Categoria))
+                                    <div class="mt-3">
+                                        <span class="badge bg-primary fs-6">@produto.Categoria</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conteúdo do card -->
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@produto.Nome</h5>
+                            
+                            @if (!string.IsNullOrEmpty(produto.Descricao))
+                            {
+                                <p class="card-text text-muted flex-grow-1">
+                                    @(produto.Descricao.Length > 100 ? 
+                                      produto.Descricao.Substring(0, 100) + "..." : 
+                                      produto.Descricao)
+                                </p>
+                            }
+                            
+                            <!-- Preço em destaque -->
+                            <div class="text-center mb-3">
+                                <h4 class="text-success mb-0">
+                                    <i class="fas fa-dollar-sign"></i> R$ @produto.Preco.ToString("F2")
+                                </h4>
+                            </div>
+                            
+                            <!-- Botões de ação -->
+                            <div class="mt-auto">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-success btn-lg" 
+                                            onclick="adicionarAoPedido(@produto.Id, '@Html.Raw(produto.Nome)', @produto.Preco)">
+                                        <i class="fas fa-cart-plus"></i> Adicionar ao Pedido
+                                    </button>
+                                    <a href="/Produtos/Details/@produto.Id" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-info-circle"></i> Ver Detalhes
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Mensagem quando não há produtos -->
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-utensils fa-4x text-muted"></i>
+                    </div>
+                    <h3 class="text-muted mb-3">Nenhum produto encontrado</h3>
+                    @if (!string.IsNullOrEmpty(categoriaAtual))
+                    {
+                        <p class="text-muted mb-4">
+                            Não há produtos disponíveis na categoria <strong>@categoriaAtual</strong> no momento.
+                        </p>
+                        <a href="/Produtos/Cardapio" class="btn btn-primary">
+                            <i class="fas fa-th-large"></i> Ver Todas as Categorias
+                        </a>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-4">
+                            Nosso cardápio está sendo atualizado. Volte em breve!
+                        </p>
+                        <a href="/" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Voltar à Página Inicial
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Call to Action para fazer pedido -->
+    @if (Model != null && Model.Any(p => p.Disponivel))
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">
+                            <i class="fas fa-shopping-cart"></i> Pronto para fazer seu pedido?
+                        </h4>
+                        <p class="card-text">
+                            Escolha seus produtos favoritos e faça seu pedido agora mesmo!
+                        </p>
+                        <a href="/Pedidos/Create" class="btn btn-light btn-lg">
+                            <i class="fas fa-plus"></i> Fazer Pedido Completo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal para adicionar produto ao pedido rápido -->
+<div class="modal fade" id="addToCartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-cart-plus"></i> Adicionar ao Pedido
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <h6 id="modalProdutoNome"></h6>
+                    <p class="text-success h5" id="modalProdutoPreco"></p>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="quantidade" class="form-label">Quantidade:</label>
+                    <div class="input-group">
+                        <button type="button" class="btn btn-outline-secondary" onclick="adjustQuantity(-1)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" id="quantidade" class="form-control text-center" value="1" min="1" max="10">
+                        <button type="button" class="btn btn-outline-secondary" onclick="adjustQuantity(1)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="observacoes" class="form-label">Observações (opcional):</label>
+                    <textarea id="observacoes" class="form-control" rows="2" 
+                              placeholder="Ex: Sem cebola, ponto da carne, etc."></textarea>
+                </div>
+                
+                <div class="text-center">
+                    <h6>Total: <span id="modalTotal" class="text-success"></span></h6>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-success" onclick="confirmarAdicao()">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let produtoAtual = {};
+        
+        function adicionarAoPedido(produtoId, produtoNome, produtoPreco) {
+            produtoAtual = {
+                id: produtoId,
+                nome: produtoNome,
+                preco: produtoPreco
+            };
+            
+            document.getElementById('modalProdutoNome').textContent = produtoNome;
+            document.getElementById('modalProdutoPreco').textContent = `R$ ${produtoPreco.toFixed(2)}`;
+            document.getElementById('quantidade').value = 1;
+            document.getElementById('observacoes').value = '';
+            
+            updateTotal();
+            
+            const modal = new bootstrap.Modal(document.getElementById('addToCartModal'));
+            modal.show();
+        }
+        
+        function adjustQuantity(change) {
+            const quantidadeInput = document.getElementById('quantidade');
+            let quantidade = parseInt(quantidadeInput.value) + change;
+            
+            if (quantidade < 1) quantidade = 1;
+            if (quantidade > 10) quantidade = 10;
+            
+            quantidadeInput.value = quantidade;
+            updateTotal();
+        }
+        
+        function updateTotal() {
+            const quantidade = parseInt(document.getElementById('quantidade').value);
+            const total = produtoAtual.preco * quantidade;
+            document.getElementById('modalTotal').textContent = `R$ ${total.toFixed(2)}`;
+        }
+        
+        function confirmarAdicao() {
+            const quantidade = parseInt(document.getElementById('quantidade').value);
+            const observacoes = document.getElementById('observacoes').value;
+            
+            // Aqui você pode implementar a lógica para adicionar ao carrinho
+            // Por enquanto, vamos mostrar uma mensagem e redirecionar para fazer pedido
+            
+            alert(`Produto adicionado: ${quantidade}x ${produtoAtual.nome}\nTotal: R$ ${(produtoAtual.preco * quantidade).toFixed(2)}\n\nRedirecionando para completar o pedido...`);
+            
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
+            modal.hide();
+            
+            // Redirecionar para criar pedido (implementar sistema de carrinho no futuro)
+            setTimeout(() => {
+                window.location.href = '/Pedidos/Create';
+            }, 1000);
+        }
+        
+        // Atualizar total quando quantidade mudar manualmente
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantidadeInput = document.getElementById('quantidade');
+            if (quantidadeInput) {
+                quantidadeInput.addEventListener('input', updateTotal);
+            }
+        });
+    </script>
+}
+
+@functions {
+    string GetCategoriaIcon(string categoria)
+    {
+        return categoria switch
+        {
+            "Lanches" => "<i class='fas fa-hamburger fa-4x text-warning'></i>",
+            "Bebidas" => "<i class='fas fa-glass-whiskey fa-4x text-info'></i>",
+            "Sobremesas" => "<i class='fas fa-ice-cream fa-4x text-danger'></i>",
+            "Pratos Executivos" => "<i class='fas fa-utensils fa-4x text-success'></i>",
+            "Saladas" => "<i class='fas fa-leaf fa-4x text-success'></i>",
+            "Petiscos" => "<i class='fas fa-cookie-bite fa-4x text-warning'></i>",
+            "Sucos" => "<i class='fas fa-cocktail fa-4x text-primary'></i>",
+            "Cafés" => "<i class='fas fa-coffee fa-4x text-dark'></i>",
+            "Doces" => "<i class='fas fa-candy-cane fa-4x text-danger'></i>",
+            "Salgados" => "<i class='fas fa-bread-slice fa-4x text-warning'></i>",
+            _ => "<i class='fas fa-utensils fa-4x text-secondary'></i>"
+        };
+    }
+    
+    string GetCategoriaIconSmall(string categoria)
+    {
+        return categoria switch
+        {
+            "Lanches" => "<i class='fas fa-hamburger text-warning'></i>",
+            "Bebidas" => "<i class='fas fa-glass-whiskey text-info'></i>",
+            "Sobremesas" => "<i class='fas fa-ice-cream text-danger'></i>",
+            "Pratos Executivos" => "<i class='fas fa-utensils text-success'></i>",
+            "Saladas" => "<i class='fas fa-leaf text-success'></i>",
+            "Petiscos" => "<i class='fas fa-cookie-bite text-warning'></i>",
+            "Sucos" => "<i class='fas fa-cocktail text-primary'></i>",
+            "Cafés" => "<i class='fas fa-coffee text-dark'></i>",
+            "Doces" => "<i class='fas fa-candy-cane text-danger'></i>",
+            "Salgados" => "<i class='fas fa-bread-slice text-warning'></i>",
+            _ => "<i class='fas fa-utensils text-secondary'></i>"
+        };
+    }
+}
