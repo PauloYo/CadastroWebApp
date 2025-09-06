@@ -1,116 +1,68 @@
-using Microsoft.Data.SqlClient; 
 using CadastroWebApp.Models;
-using CadastroWebApp.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace CadastroWebApp.Data
 {
     public class PedidoRepository
     {
-        private readonly string _connectionString;
-        private readonly ClienteRepository _clienteRepo;
+        private readonly AppDbContext _context;
 
-        public PedidoRepository(string connectionString, ClienteRepository clienteRepo)
+        public PedidoRepository(AppDbContext context)
         {
-            _connectionString = connectionString;
-            _clienteRepo = clienteRepo;
+            _context = context;
         }
 
         public List<Pedido> GetPedidos()
         {
-            var pedidos = new List<Pedido>();
-
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                string query = "SELECT * FROM Pedido ORDER BY Nome";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        pedidos.Add(new Pedido
-                        {
-                            Id = reader.GetInt32(0),
-                            Cliente = _clienteRepo.GetClienteById(reader.GetInt32(1)), // Assuming ClienteId is the second column
-                            DataPedido = reader.GetDateTime(2),
-                            ValorTotal = reader.GetDecimal(3),
-                            Status = reader.GetString(4),
-                            Descricao = reader.IsDBNull(5) ? null : reader.GetString(5)
-                        });
-                    }
-                }
-            }
-
-            return pedidos;
+            return _context.Pedidos.Include(p => p.Cliente).OrderByDescending(p => p.DataPedido).ToList();
         }
 
-        public Pedido GetPedidoById(int id)
+        public (List<Pedido> pedidos, int totalCount) GetPedidosPaginados(int page, int pageSize, string search = "")
         {
-            Pedido pedido = null;
-
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            var query = _context.Pedidos.Include(p => p.Cliente).AsQueryable();
+            
+            if (!string.IsNullOrEmpty(search))
             {
-                conn.Open();
-                string query = "SELECT * FROM Pedido WHERE Id = @Id";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Id", id);
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            pedido = new Pedido
-                            {
-                                Id = reader.GetInt32(0),
-                                Cliente = _clienteRepo.GetClienteById(reader.GetInt32(1)), // Assuming ClienteId is the second column
-                                DataPedido = reader.GetDateTime(2),
-                                ValorTotal = reader.GetDecimal(3),
-                                Status = reader.GetString(4),
-                                Descricao = reader.IsDBNull(5) ? null : reader.GetString(5)
-                            };
-                        }
-                    }
-                }
+                query = query.Where(p => p.Cliente!.Nome.Contains(search) || p.Status.Contains(search));
             }
 
-            return pedido;
+            var totalCount = query.Count();
+            var pedidos = query
+                .OrderByDescending(p => p.DataPedido)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (pedidos, totalCount);
+        }
+
+        public Pedido? GetPedidoById(int id)
+        {
+            return _context.Pedidos.Include(p => p.Cliente).FirstOrDefault(p => p.Id == id);
         }
 
         public void AddPedido(Pedido pedido)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                string query = "INSERT INTO Pedido (ClienteId, DataPedido, ValorTotal, Status, Descricao) VALUES (@ClienteId, @DataPedido, @ValorTotal, @Status, @Descricao)";
+            pedido.DataPedido = DateTime.Now;
+            pedido.DataCadastro = DateTime.Now;
+            _context.Pedidos.Add(pedido);
+            _context.SaveChanges();
+        }
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@ClienteId", pedido.Cliente.Id);
-                    cmd.Parameters.AddWithValue("@DataPedido", pedido.DataPedido);
-                    cmd.Parameters.AddWithValue("@ValorTotal", pedido.ValorTotal);
-                    cmd.Parameters.AddWithValue("@Status", pedido.Status);
-                    cmd.Parameters.AddWithValue("@Descricao", (object)pedido.Descricao ?? DBNull.Value);
-
-                    cmd.ExecuteNonQuery();
-                }
-            }
+        public void UpdatePedido(Pedido pedido)
+        {
+            pedido.DataModificacao = DateTime.Now;
+            _context.Pedidos.Update(pedido);
+            _context.SaveChanges();
         }
 
         public void DeletePedido(int id)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            var pedido = _context.Pedidos.Find(id);
+            if (pedido != null)
             {
-                conn.Open();
-                string query = "DELETE FROM Pedido WHERE Id = @Id";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Id", id);
-                    cmd.ExecuteNonQuery();
-                }
+                _context.Pedidos.Remove(pedido);
+                _context.SaveChanges();
             }
         }
     }

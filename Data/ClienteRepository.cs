@@ -1,114 +1,66 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Data.SqlClient; 
 using CadastroWebApp.Models;
 
 namespace CadastroWebApp.Data
 {
     public class ClienteRepository
     {
-        private readonly string _connectionString;
+        private readonly AppDbContext _context;
 
-        public ClienteRepository(string connectionString)
+        public ClienteRepository(AppDbContext context)
         {
-            _connectionString = connectionString;
+            _context = context;
         }
 
         public List<Cliente> GetClientes()
         {
-            var clientes = new List<Cliente>();
-
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                string query = "SELECT * FROM Cliente ORDER BY Nome";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        clientes.Add(new Cliente
-                        {
-                            Id = reader.GetInt32(0),
-                            Nome = reader.GetString(1),
-                            Email = reader.IsDBNull(2) ? null : reader.GetString(2),
-                            DataNascimento = reader.IsDBNull(3) ? (DateTime?)null : reader.GetDateTime(3),
-                            Genero = reader.IsDBNull(4) ? null : reader.GetString(4),
-                            DataCadastro = reader.GetDateTime(5)
-                        });
-                    }
-                }
-            }
-
-            return clientes;
+            return _context.Clientes.OrderBy(c => c.Nome).ToList();
         }
 
-        public Cliente GetClienteById(int id)
+        public (List<Cliente> clientes, int totalCount) GetClientesPaginados(int page, int pageSize, string search = "")
         {
-            Cliente cliente = null;
-
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            var query = _context.Clientes.AsQueryable();
+            
+            if (!string.IsNullOrEmpty(search))
             {
-                conn.Open();
-                string query = "SELECT * FROM Cliente WHERE Id = @Id";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Id", id);
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            cliente = new Cliente
-                            {
-                                Id = reader.GetInt32(0),
-                                Nome = reader.GetString(1),
-                                Email = reader.IsDBNull(2) ? null : reader.GetString(2),
-                                DataNascimento = reader.IsDBNull(3) ? (DateTime?)null : reader.GetDateTime(3),
-                                Genero = reader.IsDBNull(4) ? null : reader.GetString(4),
-                                DataCadastro = reader.GetDateTime(5)
-                            };
-                        }
-                    }
-                }
+                query = query.Where(c => c.Nome.Contains(search) || (c.Email != null && c.Email.Contains(search)));
             }
 
-            return cliente;
+            var totalCount = query.Count();
+            var clientes = query
+                .OrderBy(c => c.Nome)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (clientes, totalCount);
+        }
+
+        public Cliente? GetClienteById(int id)
+        {
+            return _context.Clientes.Find(id);
         }
 
         public void AddCliente(Cliente cliente)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                string query = "INSERT INTO Cliente (Nome, Email, DataNascimento, Genero) VALUES (@Nome, @Email, @DataNascimento, @Genero)";
+            cliente.DataCadastro = DateTime.Now;
+            _context.Clientes.Add(cliente);
+            _context.SaveChanges();
+        }
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Nome", cliente.Nome);
-                    cmd.Parameters.AddWithValue("@Email", (object?)cliente.Email ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@DataNascimento", (object?)cliente.DataNascimento ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Genero", (object?)cliente.Genero ?? DBNull.Value);
-
-                    cmd.ExecuteNonQuery();
-                }
-            }
+        public void UpdateCliente(Cliente cliente)
+        {
+            cliente.DataModificacao = DateTime.Now;
+            _context.Clientes.Update(cliente);
+            _context.SaveChanges();
         }
 
         public void DeleteCliente(int id)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            var cliente = _context.Clientes.Find(id);
+            if (cliente != null)
             {
-                conn.Open();
-                string query = "DELETE FROM Cliente WHERE Id = @Id";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Id", id);
-                    cmd.ExecuteNonQuery();
-                }
+                _context.Clientes.Remove(cliente);
+                _context.SaveChanges();
             }
         }
     }
