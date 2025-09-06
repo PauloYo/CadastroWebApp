@@ -1,0 +1,84 @@
+@model CadastroWebApp.Models.Pedido
+@{
+    ViewData["Title"] = "Excluir Pedido";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-trash"></i> Confirmar Exclusão do Pedido #@Model.Id
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Atenção!</strong> Esta ação não pode ser desfeita. Tem certeza que deseja excluir este pedido?
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user"></i> Informações do Cliente</h6>
+                        <p><strong>Nome:</strong> @Model.Cliente?.Nome</p>
+                        <p><strong>Email:</strong> @(Model.Cliente?.Email ?? "Não informado")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shopping-cart"></i> Informações do Pedido</h6>
+                        <p><strong>Data do Pedido:</strong> @Model.DataPedido.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-primary">@Model.Status</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h6><i class="fas fa-info-circle"></i> Detalhes</h6>
+                        <p><strong>Valor Total:</strong> <span class="text-success fw-bold">@Model.ValorTotal.ToString("C")</span></p>
+                        @if (!string.IsNullOrEmpty(Model.Descricao))
+                        {
+                            <p><strong>Descrição:</strong> @Model.Descricao</p>
+                        }
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><small class="text-muted">
+                            <i class="fas fa-calendar-plus"></i> <strong>Cadastrado:</strong> @Model.DataCadastro.ToString("dd/MM/yyyy HH:mm")
+                        </small></p>
+                    </div>
+                    @if (Model.DataModificacao.HasValue)
+                    {
+                        <div class="col-md-6">
+                            <p><small class="text-muted">
+                                <i class="fas fa-calendar-edit"></i> <strong>Modificado:</strong> @Model.DataModificacao.Value.ToString("dd/MM/yyyy HH:mm")
+                            </small></p>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <form method="post" asp-action="Delete" asp-route-id="@Model.Id" class="d-inline">
+                        <input name="__RequestVerificationToken" type="hidden" value="@Html.AntiForgeryToken()" />
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir este pedido?')">
+                            <i class="fas fa-trash"></i> Confirmar Exclusão
+                        </button>
+                    </form>
+                    <a href="/Pedidos" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <a href="/Pedidos/Details/@Model.Id" class="btn btn-info">
+                        <i class="fas fa-eye"></i> Ver Detalhes
+                    </a>
+                    <a href="/Pedidos/Edit/@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

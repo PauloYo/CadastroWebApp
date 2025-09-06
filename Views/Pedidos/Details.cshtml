@@ -1,0 +1,117 @@
+@model CadastroWebApp.Models.Pedido
+@{
+    ViewData["Title"] = "Detalhes do Pedido";
+}
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-shopping-cart text-primary"></i> Detalhes do Pedido #@Model.Id
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user"></i> Informações do Cliente</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nome:</strong></td>
+                                <td>@Model.Cliente?.Nome</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>@(Model.Cliente?.Email ?? "Não informado")</td>
+                            </tr>
+                            @if (Model.Cliente?.DataNascimento.HasValue == true)
+                            {
+                                <tr>
+                                    <td><strong>Data Nascimento:</strong></td>
+                                    <td>@Model.Cliente.DataNascimento.Value.ToString("dd/MM/yyyy")</td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Cliente?.Genero))
+                            {
+                                <tr>
+                                    <td><strong>Gênero:</strong></td>
+                                    <td>@Model.Cliente.Genero</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shopping-cart"></i> Informações do Pedido</h6>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Data do Pedido:</strong></td>
+                                <td>@Model.DataPedido.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Valor Total:</strong></td>
+                                <td><span class="text-success fw-bold fs-5">@Model.ValorTotal.ToString("C")</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    @{
+                                        var badgeClass = Model.Status switch
+                                        {
+                                            "Pendente" => "bg-warning text-dark",
+                                            "Processando" => "bg-info",
+                                            "Enviado" => "bg-primary",
+                                            "Entregue" => "bg-success",
+                                            "Cancelado" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@Model.Status</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Descricao))
+                {
+                    <hr>
+                    <h6><i class="fas fa-comment"></i> Descrição</h6>
+                    <p class="text-muted">@Model.Descricao</p>
+                }
+
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><small class="text-muted">
+                            <i class="fas fa-calendar-plus"></i> <strong>Cadastrado:</strong> @Model.DataCadastro.ToString("dd/MM/yyyy HH:mm")
+                        </small></p>
+                    </div>
+                    @if (Model.DataModificacao.HasValue)
+                    {
+                        <div class="col-md-6">
+                            <p><small class="text-muted">
+                                <i class="fas fa-calendar-edit"></i> <strong>Última modificação:</strong> @Model.DataModificacao.Value.ToString("dd/MM/yyyy HH:mm")
+                            </small></p>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <a href="/Pedidos" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar à Lista
+                    </a>
+                    <a href="/Pedidos/Edit/@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a href="/Pedidos/Delete/@Model.Id" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Excluir
+                    </a>
+                    <a href="/Clientes/Details/@Model.ClienteId" class="btn btn-info">
+                        <i class="fas fa-user"></i> Ver Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

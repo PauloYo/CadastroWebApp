@@ -1,0 +1,132 @@
+@model CadastroWebApp.Models.Pedido
+@{
+    ViewData["Title"] = "Cadastrar Pedido";
+    var clientes = ViewBag.Clientes as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-shopping-cart text-primary"></i> Cadastrar Novo Pedido
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-antiforgery="true">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ClienteId" class="form-label">
+                                    <i class="fas fa-user"></i> Cliente: <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="ClienteId" asp-items="clientes" class="form-select" required>
+                                    <option value="">Selecione um cliente</option>
+                                </select>
+                                <span asp-validation-for="ClienteId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="DataPedido" class="form-label">
+                                    <i class="fas fa-calendar"></i> Data do Pedido: <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="DataPedido" type="datetime-local" class="form-control" id="DataPedido" required />
+                                <span asp-validation-for="DataPedido" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="ValorTotal" class="form-label">
+                                    <i class="fas fa-dollar-sign"></i> Valor Total: <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    <input asp-for="ValorTotal" type="number" step="0.01" min="0.01" class="form-control" placeholder="0,00" required />
+                                </div>
+                                <span asp-validation-for="ValorTotal" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label">
+                                    <i class="fas fa-flag"></i> Status: <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="Status" class="form-select" required>
+                                    <option value="Pendente" selected>Pendente</option>
+                                    <option value="Processando">Processando</option>
+                                    <option value="Enviado">Enviado</option>
+                                    <option value="Entregue">Entregue</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descricao" class="form-label">
+                            <i class="fas fa-comment"></i> Descrição:
+                        </label>
+                        <textarea asp-for="Descricao" class="form-control" rows="3" 
+                                  placeholder="Descrição detalhada do pedido (opcional)"></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> Máximo 500 caracteres
+                        </div>
+                        <span asp-validation-for="Descricao" class="text-danger"></span>
+                    </div>
+
+                    <!-- Resumo de erros de validação -->
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Pedido
+                        </button>
+                        <a href="/Pedidos" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current datetime as default
+            const now = new Date();
+            const dateTimeInput = document.getElementById('DataPedido');
+            if (dateTimeInput && !dateTimeInput.value) {
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                dateTimeInput.value = now.toISOString().slice(0, 16);
+            }
+
+            // Format currency input
+            const valorInput = document.querySelector('input[name="ValorTotal"]');
+            if (valorInput) {
+                valorInput.addEventListener('input', function(e) {
+                    let value = e.target.value;
+                    // Remove non-numeric characters except decimal point
+                    value = value.replace(/[^0-9.]/g, '');
+                    // Ensure only one decimal point
+                    const parts = value.split('.');
+                    if (parts.length > 2) {
+                        value = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    e.target.value = value;
+                });
+            }
+        });
+    </script>
+}
