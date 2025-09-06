@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using CadastroWebApp.Data;
 using CadastroWebApp.Models;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CadastroWebApp.Controllers
 {
@@ -10,15 +9,31 @@ namespace CadastroWebApp.Controllers
     {
         private readonly ClienteRepository _clienteRepo;
 
-        public ClientesController(IConfiguration configuration)
+        public ClientesController(ClienteRepository clienteRepo)
         {
-            _clienteRepo = new ClienteRepository(configuration.GetConnectionString("DefaultConnection"));
+            _clienteRepo = clienteRepo;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int page = 1, string search = "")
         {
-            List<Cliente> clientes = _clienteRepo.GetClientes();
+            const int pageSize = 10;
+            var (clientes, totalCount) = _clienteRepo.GetClientesPaginados(page, pageSize, search);
+            
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            ViewBag.Search = search;
+            ViewBag.TotalCount = totalCount;
+            
             return View(clientes);
+        }
+
+        public IActionResult Details(int id)
+        {
+            var cliente = _clienteRepo.GetClienteById(id);
+            if (cliente == null)
+                return NotFound();
+                
+            return View(cliente);
         }
 
         public IActionResult Create()
@@ -27,19 +42,77 @@ namespace CadastroWebApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Cliente cliente)
         {
             if (ModelState.IsValid)
             {
-                _clienteRepo.AddCliente(cliente);
-                return RedirectToAction("Index");
+                try
+                {
+                    _clienteRepo.AddCliente(cliente);
+                    TempData["Success"] = "Cliente cadastrado com sucesso!";
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Erro ao cadastrar cliente: {ex.Message}");
+                }
+            }
+            return View(cliente);
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var cliente = _clienteRepo.GetClienteById(id);
+            if (cliente == null)
+                return NotFound();
+                
+            return View(cliente);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Cliente cliente)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _clienteRepo.UpdateCliente(cliente);
+                    TempData["Success"] = "Cliente atualizado com sucesso!";
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", $"Erro ao atualizar cliente: {ex.Message}");
+                }
             }
             return View(cliente);
         }
 
         public IActionResult Delete(int id)
         {
-            _clienteRepo.DeleteCliente(id);
+            var cliente = _clienteRepo.GetClienteById(id);
+            if (cliente == null)
+                return NotFound();
+                
+            return View(cliente);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            try
+            {
+                _clienteRepo.DeleteCliente(id);
+                TempData["Success"] = "Cliente excluído com sucesso!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Erro ao excluir cliente: {ex.Message}";
+            }
+            
             return RedirectToAction("Index");
         }
     }

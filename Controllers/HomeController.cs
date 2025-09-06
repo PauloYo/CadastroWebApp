@@ -1,47 +1,35 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using CadastroWebApp.Models;
-using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
-namespace CadastroWebApp.Controllers;
-
-public class HomeController : Controller
+namespace CadastroWebApp.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-    private readonly Database _database;
-
-    public HomeController(ILogger<HomeController> logger, Database database)
+    public class HomeController : Controller
     {
-        _logger = logger;
-        _database = database;
-    }
+        private readonly ILogger<HomeController> _logger;
+        private readonly AppDbContext _context;
 
-    public IActionResult Index()
-    {
-        try 
+        public HomeController(ILogger<HomeController> logger, AppDbContext context)
         {
-            using (SqlConnection conn = _database.GetConnection())
-            {
-                conn.Open();
-                Console.WriteLine("Conexão com o banco de dados foi bem-sucedida!");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Erro ao conectar: " + ex.Message);
+            _logger = logger;
+            _context = context;
         }
 
-        return View();
-    }
+        public IActionResult Index()
+        {
+            return View();
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        public IActionResult Privacy()
+        {
+            return View();
+        }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
 }
