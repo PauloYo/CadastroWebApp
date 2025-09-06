@@ -30,10 +30,10 @@ CadastroWebApp é uma **aplicação web moderna** desenvolvida em ASP.NET Core 9
 - **PedidoRepository**: Operações de dados para pedidos com Include() automático
 
 ### Views
-- **Home**: Página inicial moderna e responsiva
-- **Clientes**: CRUD completo (Index, Create, Edit, Details, Delete)
-- **Pedidos**: CRUD completo com seleção de cliente e status
-- **Shared**: Layout Bootstrap 5 profissional
+- **Home**: Página inicial 
+- **Clientes**: CRUD completo 
+- **Pedidos**: CRUD completo 
+- **Shared**: Layout Bootstrap 5 compartilhado
 
 ## ✨ Funcionalidades
 
