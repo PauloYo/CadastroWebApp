@@ -294,8 +294,5 @@ CadastroWebApp/
 ## 📄 Licença
 Este projeto está sob a licença **MIT**. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## 👨‍💻 Autor
-Desenvolvido com ❤️ por **PauloYo**
-
 ---
 ⭐ **Gostou do projeto? Deixe uma estrela no GitHub!**
