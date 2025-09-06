@@ -36,9 +36,9 @@
                     <div class="col-12">
                         <h6><i class="fas fa-info-circle"></i> Detalhes</h6>
                         <p><strong>Valor Total:</strong> <span class="text-success fw-bold">@Model.ValorTotal.ToString("C")</span></p>
-                        @if (!string.IsNullOrEmpty(Model.Descricao))
+                        @if (!string.IsNullOrEmpty(Model.Observacoes))
                         {
-                            <p><strong>Descrição:</strong> @Model.Descricao</p>
+                            <p><strong>Observações:</strong> @Model.Observacoes</p>
                         }
                     </div>
                 </div>

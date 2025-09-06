@@ -1,98 +1,232 @@
 @model CadastroWebApp.Models.Pedido
 @{
-    ViewData["Title"] = "Cadastrar Pedido";
+    ViewData["Title"] = "Fazer Pedido - FastRequest";
     var clientes = ViewBag.Clientes as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
+    var produtos = ViewBag.Produtos as List<CadastroWebApp.Models.Produto>;
 }
 
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">
-                    <i class="fas fa-shopping-cart text-primary"></i> Cadastrar Novo Pedido
-                </h4>
+<div class="container-fluid">
+    <!-- Header do Pedido -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h2 class="card-title mb-1">
+                        <i class="fas fa-shopping-cart"></i> Fazer Novo Pedido - FastRequest
+                    </h2>
+                    <p class="card-text mb-0">Selecione os produtos e personalize seu pedido</p>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="post" asp-antiforgery="true">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="ClienteId" class="form-label">
-                                    <i class="fas fa-user"></i> Cliente: <span class="text-danger">*</span>
-                                </label>
-                                <select asp-for="ClienteId" asp-items="clientes" class="form-select" required>
-                                    <option value="">Selecione um cliente</option>
-                                </select>
-                                <span asp-validation-for="ClienteId" class="text-danger"></span>
+        </div>
+    </div>
+
+    <form method="post" asp-antiforgery="true" id="pedidoForm">
+        <div class="row">
+            <!-- Coluna dos Produtos (Cardápio) -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-utensils"></i> Selecionar Produtos
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filtro rápido -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="searchProdutos" class="form-control" 
+                                       placeholder="Buscar produtos...">
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="DataPedido" class="form-label">
-                                    <i class="fas fa-calendar"></i> Data do Pedido: <span class="text-danger">*</span>
-                                </label>
-                                <input asp-for="DataPedido" type="datetime-local" class="form-control" id="DataPedido" required />
-                                <span asp-validation-for="DataPedido" class="text-danger"></span>
-                            </div>
+
+                        <!-- Lista de Produtos -->
+                        <div class="row" id="produtosList">
+                            @if (produtos != null)
+                            {
+                                @foreach (var produto in produtos)
+                                {
+                                    <div class="col-md-6 col-xl-4 mb-3 produto-item" data-nome="@produto.Nome.ToLower()" data-categoria="@produto.Categoria.ToLower()">
+                                        <div class="card border-0 shadow-sm h-100">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex align-items-start">
+                                                    <!-- Ícone da categoria -->
+                                                    <div class="me-3">
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                                             style="width: 60px; height: 60px;">
+                                                            @Html.Raw(GetCategoriaIconSmall(produto.Categoria))
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Informações do produto -->
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="card-title mb-1">@produto.Nome</h6>
+                                                        <small class="text-muted mb-2 d-block">@produto.Categoria</small>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <span class="h6 text-success mb-0">
+                                                                R$ @produto.Preco.ToString("F2")
+                                                            </span>
+                                                            <button type="button" class="btn btn-primary btn-sm" 
+                                                                    onclick="adicionarProduto(@produto.Id, '@Html.Raw(produto.Nome)', @produto.Preco)">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="ValorTotal" class="form-label">
-                                    <i class="fas fa-dollar-sign"></i> Valor Total: <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text">R$</span>
-                                    <input asp-for="ValorTotal" type="number" step="0.01" min="0.01" class="form-control" placeholder="0,00" required />
+            <!-- Coluna do Resumo do Pedido -->
+            <div class="col-lg-4">
+                <div class="card sticky-top" style="top: 20px;">
+                    <!-- Dados do Cliente -->
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clipboard-list"></i> Resumo do Pedido
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Seleção do Cliente -->
+                        <div class="mb-3">
+                            <label asp-for="ClienteId" class="form-label">
+                                <i class="fas fa-user"></i> Cliente: <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="ClienteId" asp-items="clientes" class="form-select" required>
+                                <option value="">Selecione um cliente</option>
+                            </select>
+                            <span asp-validation-for="ClienteId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Tipo de Entrega -->
+                        <div class="mb-3">
+                            <label asp-for="TipoEntrega" class="form-label">
+                                <i class="fas fa-truck"></i> Tipo de Entrega:
+                            </label>
+                            <select asp-for="TipoEntrega" class="form-select" onchange="toggleMesa()">
+                                <option value="Balcão">Retirar no Balcão</option>
+                                <option value="Mesa">Entrega na Mesa</option>
+                                <option value="Delivery">Delivery</option>
+                            </select>
+                        </div>
+
+                        <!-- Número da Mesa (condicional) -->
+                        <div class="mb-3" id="mesaContainer" style="display: none;">
+                            <label asp-for="NumeroMesa" class="form-label">
+                                <i class="fas fa-chair"></i> Número da Mesa:
+                            </label>
+                            <input asp-for="NumeroMesa" type="number" class="form-control" placeholder="Ex: 5" min="1" max="50">
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="mb-3">
+                            <label asp-for="Observacoes" class="form-label">
+                                <i class="fas fa-comment"></i> Observações:
+                            </label>
+                            <textarea asp-for="Observacoes" class="form-control" rows="2" 
+                                      placeholder="Observações gerais do pedido..."></textarea>
+                        </div>
+
+                        <hr>
+
+                        <!-- Itens do Pedido -->
+                        <div class="mb-3">
+                            <h6>
+                                <i class="fas fa-list"></i> Itens do Pedido
+                            </h6>
+                            <div id="itensPedido" class="border rounded p-2" style="min-height: 100px; max-height: 300px; overflow-y: auto;">
+                                <div class="text-center text-muted py-3" id="emptyMessage">
+                                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                    <p class="mb-0">Nenhum item adicionado</p>
+                                    <small>Selecione produtos do cardápio</small>
                                 </div>
-                                <span asp-validation-for="ValorTotal" class="text-danger"></span>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="Status" class="form-label">
-                                    <i class="fas fa-flag"></i> Status: <span class="text-danger">*</span>
-                                </label>
-                                <select asp-for="Status" class="form-select" required>
-                                    <option value="Pendente" selected>Pendente</option>
-                                    <option value="Processando">Processando</option>
-                                    <option value="Enviado">Enviado</option>
-                                    <option value="Entregue">Entregue</option>
-                                    <option value="Cancelado">Cancelado</option>
-                                </select>
-                                <span asp-validation-for="Status" class="text-danger"></span>
+
+                        <!-- Total do Pedido -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong>Total do Pedido:</strong>
+                                <h4 class="text-success mb-0" id="totalPedido">R$ 0,00</h4>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Descricao" class="form-label">
-                            <i class="fas fa-comment"></i> Descrição:
-                        </label>
-                        <textarea asp-for="Descricao" class="form-control" rows="3" 
-                                  placeholder="Descrição detalhada do pedido (opcional)"></textarea>
-                        <div class="form-text">
-                            <i class="fas fa-info-circle"></i> Máximo 500 caracteres
+                        <!-- Botões de Ação -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg" id="finalizarBtn" disabled>
+                                <i class="fas fa-check"></i> Finalizar Pedido
+                            </button>
+                            <a href="/Produtos/Cardapio" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Voltar ao Cardápio
+                            </a>
                         </div>
-                        <span asp-validation-for="Descricao" class="text-danger"></span>
                     </div>
+                </div>
+            </div>
+        </div>
 
-                    <!-- Resumo de erros de validação -->
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <!-- Campos hidden para enviar os dados -->
+        <input type="hidden" id="itensJson" name="itensJson" />
+        <input type="hidden" asp-for="ValorTotal" id="valorTotalHidden" />
+        <input type="hidden" asp-for="Status" value="Aguardando" />
+        <input type="hidden" asp-for="DataPedido" id="dataPedidoHidden" />
+    </form>
+</div>
 
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Salvar Pedido
+<!-- Modal para Personalizar Item -->
+<div class="modal fade" id="itemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i> Personalizar Item
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <h6 id="modalProdutoNome"></h6>
+                    <p class="text-success" id="modalProdutoPreco"></p>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="modalQuantidade" class="form-label">Quantidade:</label>
+                    <div class="input-group">
+                        <button type="button" class="btn btn-outline-secondary" onclick="adjustModalQuantity(-1)">
+                            <i class="fas fa-minus"></i>
                         </button>
-                        <a href="/Pedidos" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Cancelar
-                        </a>
+                        <input type="number" id="modalQuantidade" class="form-control text-center" value="1" min="1" max="10">
+                        <button type="button" class="btn btn-outline-secondary" onclick="adjustModalQuantity(1)">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
-                </form>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="modalObservacoes" class="form-label">Observações:</label>
+                    <textarea id="modalObservacoes" class="form-control" rows="2" 
+                              placeholder="Ex: Sem cebola, ponto da carne, etc."></textarea>
+                </div>
+                
+                <div class="text-center">
+                    <h6>Subtotal: <span id="modalSubtotal" class="text-success"></span></h6>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmarItem()">
+                    <i class="fas fa-check"></i> Adicionar ao Pedido
+                </button>
             </div>
         </div>
     </div>
@@ -103,30 +237,183 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set current datetime as default
-            const now = new Date();
-            const dateTimeInput = document.getElementById('DataPedido');
-            if (dateTimeInput && !dateTimeInput.value) {
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                dateTimeInput.value = now.toISOString().slice(0, 16);
-            }
+        let itensPedido = [];
+        let produtoAtual = {};
 
-            // Format currency input
-            const valorInput = document.querySelector('input[name="ValorTotal"]');
-            if (valorInput) {
-                valorInput.addEventListener('input', function(e) {
-                    let value = e.target.value;
-                    // Remove non-numeric characters except decimal point
-                    value = value.replace(/[^0-9.]/g, '');
-                    // Ensure only one decimal point
-                    const parts = value.split('.');
-                    if (parts.length > 2) {
-                        value = parts[0] + '.' + parts.slice(1).join('');
-                    }
-                    e.target.value = value;
-                });
+        function adicionarProduto(produtoId, produtoNome, produtoPreco) {
+            produtoAtual = {
+                id: produtoId,
+                nome: produtoNome,
+                preco: produtoPreco
+            };
+            
+            document.getElementById('modalProdutoNome').textContent = produtoNome;
+            document.getElementById('modalProdutoPreco').textContent = `R$ ${produtoPreco.toFixed(2)}`;
+            document.getElementById('modalQuantidade').value = 1;
+            document.getElementById('modalObservacoes').value = '';
+            
+            updateModalSubtotal();
+            
+            const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+            modal.show();
+        }
+
+        function adjustModalQuantity(change) {
+            const quantidadeInput = document.getElementById('modalQuantidade');
+            let quantidade = parseInt(quantidadeInput.value) + change;
+            
+            if (quantidade < 1) quantidade = 1;
+            if (quantidade > 10) quantidade = 10;
+            
+            quantidadeInput.value = quantidade;
+            updateModalSubtotal();
+        }
+
+        function updateModalSubtotal() {
+            const quantidade = parseInt(document.getElementById('modalQuantidade').value);
+            const subtotal = produtoAtual.preco * quantidade;
+            document.getElementById('modalSubtotal').textContent = `R$ ${subtotal.toFixed(2)}`;
+        }
+
+        function confirmarItem() {
+            const quantidade = parseInt(document.getElementById('modalQuantidade').value);
+            const observacoes = document.getElementById('modalObservacoes').value;
+            
+            const item = {
+                produtoId: produtoAtual.id,
+                produtoNome: produtoAtual.nome,
+                quantidade: quantidade,
+                precoUnitario: produtoAtual.preco,
+                observacoes: observacoes,
+                subtotal: quantidade * produtoAtual.preco
+            };
+            
+            itensPedido.push(item);
+            atualizarResumo();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('itemModal'));
+            modal.hide();
+        }
+
+        function removerItem(index) {
+            itensPedido.splice(index, 1);
+            atualizarResumo();
+        }
+
+        function atualizarResumo() {
+            const container = document.getElementById('itensPedido');
+            const emptyMessage = document.getElementById('emptyMessage');
+            const finalizarBtn = document.getElementById('finalizarBtn');
+            
+            if (itensPedido.length === 0) {
+                emptyMessage.style.display = 'block';
+                finalizarBtn.disabled = true;
+                document.getElementById('totalPedido').textContent = 'R$ 0,00';
+                document.getElementById('valorTotalHidden').value = '0';
+                return;
             }
+            
+            emptyMessage.style.display = 'none';
+            finalizarBtn.disabled = false;
+            
+            let html = '';
+            let total = 0;
+            
+            itensPedido.forEach((item, index) => {
+                total += item.subtotal;
+                html += `
+                    <div class="border-bottom pb-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>${item.produtoNome}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    ${item.quantidade}x R$ ${item.precoUnitario.toFixed(2)} = R$ ${item.subtotal.toFixed(2)}
+                                </small>
+                                ${item.observacoes ? `<br><small class="text-info">${item.observacoes}</small>` : ''}
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removerItem(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            document.getElementById('totalPedido').textContent = `R$ ${total.toFixed(2)}`;
+            document.getElementById('valorTotalHidden').value = total.toFixed(2);
+            
+            // Atualizar JSON para envio
+            const itensParaEnvio = itensPedido.map(item => ({
+                ProdutoId: item.produtoId,
+                Quantidade: item.quantidade,
+                Observacoes: item.observacoes
+            }));
+            
+            document.getElementById('itensJson').value = JSON.stringify(itensParaEnvio);
+        }
+
+        function toggleMesa() {
+            const tipoEntrega = document.querySelector('select[name="TipoEntrega"]').value;
+            const mesaContainer = document.getElementById('mesaContainer');
+            
+            if (tipoEntrega === 'Mesa') {
+                mesaContainer.style.display = 'block';
+                document.querySelector('input[name="NumeroMesa"]').required = true;
+            } else {
+                mesaContainer.style.display = 'none';
+                document.querySelector('input[name="NumeroMesa"]').required = false;
+                document.querySelector('input[name="NumeroMesa"]').value = '';
+            }
+        }
+
+        // Busca de produtos
+        document.getElementById('searchProdutos').addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            const produtos = document.querySelectorAll('.produto-item');
+            
+            produtos.forEach(produto => {
+                const nome = produto.getAttribute('data-nome');
+                const categoria = produto.getAttribute('data-categoria');
+                
+                if (nome.includes(search) || categoria.includes(search)) {
+                    produto.style.display = 'block';
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+        });
+
+        // Atualizar subtotal do modal quando quantidade mudar
+        document.getElementById('modalQuantidade').addEventListener('input', updateModalSubtotal);
+
+        // Configurar data padrão
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('dataPedidoHidden').value = now.toISOString().slice(0, 19);
         });
     </script>
+}
+
+@functions {
+    string GetCategoriaIconSmall(string categoria)
+    {
+        return categoria switch
+        {
+            "Lanches" => "<i class=\"fas fa-hamburger fa-2x text-warning\"></i>",
+            "Bebidas" => "<i class=\"fas fa-glass-whiskey fa-2x text-info\"></i>",
+            "Sobremesas" => "<i class=\"fas fa-ice-cream fa-2x text-danger\"></i>",
+            "Pratos Executivos" => "<i class=\"fas fa-utensils fa-2x text-success\"></i>",
+            "Saladas" => "<i class=\"fas fa-leaf fa-2x text-success\"></i>",
+            "Petiscos" => "<i class=\"fas fa-cookie-bite fa-2x text-warning\"></i>",
+            "Sucos" => "<i class=\"fas fa-cocktail fa-2x text-primary\"></i>",
+            "Cafés" => "<i class=\"fas fa-coffee fa-2x text-dark\"></i>",
+            "Doces" => "<i class=\"fas fa-candy-cane fa-2x text-danger\"></i>",
+            "Salgados" => "<i class=\"fas fa-bread-slice fa-2x text-warning\"></i>",
+            _ => "<i class=\"fas fa-utensils fa-2x text-secondary\"></i>"
+        };
+    }
+}
 }

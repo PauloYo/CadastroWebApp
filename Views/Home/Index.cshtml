@@ -1,8 +1,171 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "FastRequest - Cantina Digital";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Seja Bem-vindo</h1>
-    <p>Este é um projeto sobre um CRUD envolvendo clientes e pedidos!</p>
+<div class="hero-section text-center py-5 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px;">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-3">
+            <i class="fas fa-utensils"></i> FastRequest
+        </h1>
+        <p class="lead fs-4 mb-4">Sua Cantina Digital - Pedidos Rápidos e Sabor Garantido!</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <p class="fs-5 mb-4">
+                    Faça seu pedido online, escolha seus pratos favoritos e tenha uma experiência gastronômica incrível!
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="/Produtos" class="btn btn-light btn-lg px-4 py-3">
+                        <i class="fas fa-hamburger"></i> Ver Cardápio
+                    </a>
+                    <a href="/Pedidos/Create" class="btn btn-warning btn-lg px-4 py-3">
+                        <i class="fas fa-shopping-cart"></i> Fazer Pedido
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="fw-bold">
+                <i class="fas fa-star text-warning"></i> 
+                Por que escolher a FastRequest?
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-clock fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Pedidos Rápidos</h5>
+                    <p class="card-text">
+                        Sistema otimizado para pedidos ágeis. Sua comida pronta em minutos!
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-heart fa-3x text-danger"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Sabor Garantido</h5>
+                    <p class="card-text">
+                        Ingredientes frescos e receitas especiais para uma experiência única.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-mobile-alt fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title fw-bold">Fácil de Usar</h5>
+                    <p class="card-text">
+                        Interface intuitiva para você fazer seus pedidos sem complicação.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body p-4">
+                    <h3 class="text-center mb-4">
+                        <i class="fas fa-concierge-bell text-warning"></i> 
+                        Como Funciona
+                    </h3>
+                    <div class="row g-4">
+                        <div class="col-md-3 text-center">
+                            <div class="step-number mb-3">
+                                <span class="badge bg-primary rounded-circle p-3 fs-4">1</span>
+                            </div>
+                            <h6 class="fw-bold">Escolha seus Pratos</h6>
+                            <p class="small text-muted">Navegue pelo cardápio e selecione o que deseja</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="step-number mb-3">
+                                <span class="badge bg-primary rounded-circle p-3 fs-4">2</span>
+                            </div>
+                            <h6 class="fw-bold">Faça seu Pedido</h6>
+                            <p class="small text-muted">Adicione ao carrinho e finalize o pedido</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="step-number mb-3">
+                                <span class="badge bg-primary rounded-circle p-3 fs-4">3</span>
+                            </div>
+                            <h6 class="fw-bold">Aguarde o Preparo</h6>
+                            <p class="small text-muted">Acompanhe o status do seu pedido em tempo real</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="step-number mb-3">
+                                <span class="badge bg-success rounded-circle p-3 fs-4">4</span>
+                            </div>
+                            <h6 class="fw-bold">Retire ou Receba</h6>
+                            <p class="small text-muted">Retire no balcão ou receba na sua mesa</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="alert alert-info border-0" style="background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); color: white;">
+                <h5 class="fw-bold mb-2">
+                    <i class="fas fa-gift"></i> 
+                    Promoção Especial!
+                </h5>
+                <p class="mb-0">
+                    Faça seu primeiro pedido e ganhe 10% de desconto! 
+                    <strong>Use o código: BEMVINDO10</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover .feature-icon {
+        transform: scale(1.1);
+    }
+    
+    .step-number .badge {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+</style>

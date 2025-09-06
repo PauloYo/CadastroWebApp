@@ -1,0 +1,209 @@
+@model CadastroWebApp.Models.Cliente
+@{
+    ViewData["Title"] = "Detalhes do Cliente";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-user text-primary"></i> Detalhes do Cliente
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-id-badge"></i> ID:
+                            </label>
+                            <p class="form-control-static fw-bold">@Model.Id</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-calendar-plus"></i> Data de Cadastro:
+                            </label>
+                            <p class="form-control-static">
+                                @Model.DataCadastro.ToString("dd/MM/yyyy HH:mm")
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-user"></i> Nome Completo:
+                            </label>
+                            <p class="form-control-static fw-bold fs-5">@Model.Nome</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-envelope"></i> Email:
+                            </label>
+                            <p class="form-control-static">
+                                <a href="mailto:@Model.Email" class="text-decoration-none">
+                                    @Model.Email
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-venus-mars"></i> Gênero:
+                            </label>
+                            <p class="form-control-static">
+                                @if (Model.Genero == "M")
+                                {
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-mars"></i> Masculino
+                                    </span>
+                                }
+                                else if (Model.Genero == "F")
+                                {
+                                    <span class="badge bg-pink">
+                                        <i class="fas fa-venus"></i> Feminino
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-question"></i> Não informado
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-birthday-cake"></i> Data de Nascimento:
+                            </label>
+                            <p class="form-control-static">
+                                @if (Model.DataNascimento.HasValue)
+                                {
+                                    @Model.DataNascimento.Value.ToString("dd/MM/yyyy")
+                                    
+                                    var idade = DateTime.Now.Year - Model.DataNascimento.Value.Year;
+                                    if (DateTime.Now.Date < Model.DataNascimento.Value.AddYears(idade))
+                                        idade--;
+                                    
+                                    <small class="text-muted">(@idade anos)</small>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Não informado</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-clock"></i> Tempo como Cliente:
+                            </label>
+                            <p class="form-control-static">
+                                @{
+                                    var tempoCliente = DateTime.Now - Model.DataCadastro;
+                                    if (tempoCliente.TotalDays < 1)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-star"></i> Novo Cliente
+                                        </span>
+                                    }
+                                    else if (tempoCliente.TotalDays < 30)
+                                    {
+                                        <span class="badge bg-info">
+                                            @((int)tempoCliente.TotalDays) dias
+                                        </span>
+                                    }
+                                    else if (tempoCliente.TotalDays < 365)
+                                    {
+                                        <span class="badge bg-warning">
+                                            @((int)(tempoCliente.TotalDays / 30)) meses
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary">
+                                            @((int)(tempoCliente.TotalDays / 365)) anos
+                                        </span>
+                                    }
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações de Pedidos (se houver) -->
+                @if (ViewBag.TotalPedidos != null)
+                {
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">
+                                    <i class="fas fa-shopping-cart"></i> Resumo de Pedidos
+                                </h6>
+                                <p class="mb-0">
+                                    Este cliente possui <strong>@ViewBag.TotalPedidos pedidos</strong> registrados
+                                    @if (ViewBag.ValorTotalPedidos != null)
+                                    {
+                                        <text>com valor total de <strong>@ViewBag.ValorTotalPedidos.ToString("C")</strong></text>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="d-flex gap-2 mt-4">
+                    <a href="/Clientes/Edit/@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a href="/Pedidos?search=@Model.Nome" class="btn btn-info">
+                        <i class="fas fa-shopping-cart"></i> Ver Pedidos
+                    </a>
+                    <a href="/Clientes" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar à Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-pink {
+        background-color: #e91e63 !important;
+    }
+    
+    .form-control-static {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+        min-height: 1.5rem;
+    }
+    
+    .card-header h4 {
+        color: #333;
+    }
+    
+    .text-muted {
+        font-weight: 500;
+    }
+</style>
