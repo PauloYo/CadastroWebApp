@@ -43,6 +43,7 @@ pedidos.
 
 ## 📂 Estrutura do Projeto
 
+    ├── app.ipynb           # código com jupyter notebook    
     ├── dashboard.py        # Código principal do dashboard
     ├── README.md           # Documentação do projeto
 
@@ -85,7 +86,7 @@ pedidos.
 5.  **Execute o Streamlit**
 
     ``` bash
-    streamlit run app.py
+    streamlit run dashboard.py
     ```
 
 6.  **Acesse no navegador**
