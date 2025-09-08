@@ -74,7 +74,7 @@ pedidos.
 
 4.  **Configure o acesso ao banco de dados**
 
-    -   Edite a variável `DATABASE_URL` em `app.py` com as credenciais
+    -   Edite a variável `DATABASE_URL` em `dashboard.py` com as credenciais
         do seu banco PostgreSQL.
 
     Exemplo:
